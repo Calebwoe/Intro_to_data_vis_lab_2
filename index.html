@@ -7,20 +7,16 @@
 </head>
 <body>
   <h2>Global Temperatures Over Time</h2>
-  <!-- Graph will render inside this div -->
+
   <div id="chart" style="width: 800px; height: 500px;"></div>
 
-  <!-- Load dataset first -->
+  
   <script src="GlobalTemperatures.json"></script>
 
-  <!-- Your D3 script -->
   <script>
     async function Scatter() {
-      // dataset comes from GlobalTemperatures.json (var temperature = [...])
       const data = temperature;
-      console.log("Loaded rows:", data.length);
-
-      // Set up SVG canvas
+      console.log(data);
       const margin = { top: 20, right: 30, bottom: 40, left: 60 },
             width = 800 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
@@ -32,7 +28,7 @@
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      // X scale (time)
+      // X axis
       const x = d3.scaleLinear()
         .domain(d3.extent(data, d => d.time))
         .range([0, width]);
@@ -41,7 +37,7 @@
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x).ticks(10));
 
-      // Y scale (temperature)
+      //Y axis
       const y = d3.scaleLinear()
         .domain(d3.extent(data, d => d.LAT))
         .range([height, 0]);
@@ -49,7 +45,7 @@
       svg.append("g")
         .call(d3.axisLeft(y));
 
-      // Radius scale (uncertainty)
+      // Radius 
       const r = d3.scaleLinear()
         .domain(d3.extent(data, d => d.LATU))
         .range([1, 6]);
