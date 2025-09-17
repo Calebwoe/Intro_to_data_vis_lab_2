@@ -4,63 +4,70 @@
   <meta charset="UTF-8">
   <title>Global Temperatures Scatterplot</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    svg {
-      width: 800px;
-      height: 500px;
-      border: 1px solid #ccc;
-    }
-    circle {
-      fill: black;
-      opacity: 0.6;
-    }
-  </style>
 </head>
 <body>
   <h2>Global Temperatures Over Time</h2>
-  <svg id="scatterplot"></svg>
+  <!-- Graph will render inside this div -->
+  <div id="chart" style="width: 800px; height: 500px;"></div>
 
+  <!-- Load dataset first -->
   <script src="GlobalTemperatures.json"></script>
 
+  <!-- Your D3 script -->
   <script>
-    const data = temperature;  // comes from the JSON file
+    async function Scatter() {
+      // dataset comes from GlobalTemperatures.json (var temperature = [...])
+      const data = temperature;
+      console.log("Loaded rows:", data.length);
 
-    const svg = d3.select("#scatterplot");
-    const width = 800;
-    const height = 500;
-    const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+      // Set up SVG canvas
+      const margin = { top: 20, right: 30, bottom: 40, left: 60 },
+            width = 800 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
 
+      const svg = d3.select("#chart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const x = d3.scaleLinear()
-      .domain(d3.extent(data, d => d.time))
-      .range([margin.left, width - margin.right]);
+      // X scale (time)
+      const x = d3.scaleLinear()
+        .domain(d3.extent(data, d => d.time))
+        .range([0, width]);
 
-    const y = d3.scaleLinear()
-      .domain(d3.extent(data, d => d.LAT))
-      .range([height - margin.bottom, margin.top]);
+      svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x).ticks(10));
 
-    const r = d3.scaleLinear()
-      .domain(d3.extent(data, d => d.LATU))
-      .range([2, 8]);
+      // Y scale (temperature)
+      const y = d3.scaleLinear()
+        .domain(d3.extent(data, d => d.LAT))
+        .range([height, 0]);
 
+      svg.append("g")
+        .call(d3.axisLeft(y));
 
-    svg.append("g")
-      .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(x).ticks(10));
+      // Radius scale (uncertainty)
+      const r = d3.scaleLinear()
+        .domain(d3.extent(data, d => d.LATU))
+        .range([1, 6]);
 
-    svg.append("g")
-      .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(y));
+      // Add scatterplot points
+      svg.append("g")
+        .selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+          .attr("cx", d => x(d.time))
+          .attr("cy", d => y(d.LAT))
+          .attr("r", d => r(d.LATU))
+          .attr("fill", "black")
+          .attr("opacity", 0.6);
+    }
 
-
-    svg.append("g")
-      .selectAll("circle")
-      .data(data)
-      .enter()
-      .append("circle")
-      .attr("cx", d => x(d.time))
-      .attr("cy", d => y(d.LAT))
-      .attr("r", d => r(d.LATU));
+    Scatter();
   </script>
 </body>
 </html>
