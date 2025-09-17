@@ -4,57 +4,63 @@
   <meta charset="UTF-8">
   <title>Global Temperatures Scatterplot</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    svg {
+      width: 800px;
+      height: 500px;
+      border: 1px solid #ccc;
+    }
+    circle {
+      fill: black;
+      opacity: 0.6;
+    }
+  </style>
 </head>
 <body>
   <h2>Global Temperatures Over Time</h2>
-
-  
-  <svg id="scatterplot" width="800" height="500"></svg>
+  <svg id="scatterplot"></svg>
 
   <script src="GlobalTemperatures.json"></script>
-  
+
   <script>
-    const data = temperature;  // comes from GlobalTemperatures.json
+    const data = temperature;  // comes from the JSON file
 
     const svg = d3.select("#scatterplot");
+    const width = 800;
+    const height = 500;
     const margin = { top: 20, right: 30, bottom: 40, left: 60 };
-    const width = +svg.attr("width") - margin.left - margin.right;
-    const height = +svg.attr("height") - margin.top - margin.bottom;
 
-    const g = svg.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    
     const x = d3.scaleLinear()
       .domain(d3.extent(data, d => d.time))
-      .range([0, width]);
+      .range([margin.left, width - margin.right]);
 
     const y = d3.scaleLinear()
       .domain(d3.extent(data, d => d.LAT))
-      .range([height, 0]);
+      .range([height - margin.bottom, margin.top]);
 
     const r = d3.scaleLinear()
       .domain(d3.extent(data, d => d.LATU))
       .range([2, 8]);
 
-    
-    g.append("g")
-      .attr("transform", `translate(0,${height})`)
+
+    svg.append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(x).ticks(10));
 
-    g.append("g")
+    svg.append("g")
+      .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(y));
 
 
-    g.selectAll("circle")
+    svg.append("g")
+      .selectAll("circle")
       .data(data)
-      .enter().append("circle")
+      .enter()
+      .append("circle")
       .attr("cx", d => x(d.time))
       .attr("cy", d => y(d.LAT))
-      .attr("r", d => r(d.LATU))
-      .attr("fill", "black")
-      .attr("opacity", 0.6);
+      .attr("r", d => r(d.LATU));
   </script>
 </body>
 </html>
-
