@@ -8,12 +8,11 @@
 <body>
   <h2>Global Temperatures Over Time</h2>
 
-  <!-- SVG container -->
+  
   <svg id="scatterplot" width="800" height="500"></svg>
 
-  <!-- Load dataset first -->
   <script src="GlobalTemperatures.json"></script>
-  <!-- Then your D3 code -->
+  
   <script>
     const data = temperature;  // comes from GlobalTemperatures.json
 
@@ -25,7 +24,7 @@
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Scales
+    
     const x = d3.scaleLinear()
       .domain(d3.extent(data, d => d.time))
       .range([0, width]);
@@ -38,7 +37,7 @@
       .domain(d3.extent(data, d => d.LATU))
       .range([2, 8]);
 
-    // Axes
+    
     g.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x).ticks(10));
@@ -46,7 +45,7 @@
     g.append("g")
       .call(d3.axisLeft(y));
 
-    // Scatterplot circles
+
     g.selectAll("circle")
       .data(data)
       .enter().append("circle")
