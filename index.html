@@ -4,26 +4,58 @@
   <meta charset="UTF-8">
   <title>Global Temperatures Scatterplot</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  
 </head>
 <body>
   <h2>Global Temperatures Over Time</h2>
-  <svg id="scatterplot" width="400" height="600" ></svg>
-  
+
+  <!-- SVG container -->
+  <svg id="scatterplot" width="800" height="500"></svg>
+
+  <!-- Load dataset first -->
+  <script src="GlobalTemperatures.json"></script>
+  <!-- Then your D3 code -->
   <script>
-    d3.json(__.json).then(function(data) {
-      const svgBar=d3.select("#bar-chart");
-      const marginBar = { top: 20, right: 20, bottom: 40, left: 40 };
-      const widthBar = +svgBar.attr("width" - marginBar.leftf - marginBar.right;
-      const heightBar = _svgBar.attr("height") - marginBar.top - marginBar.bottom;
+    const data = temperature;  // comes from GlobalTemperatures.json
 
-      const x = d3.scaleBand().range([0, widthBar]).padding(0,1).domain(data.map((d,i) => i.toString()));
-      const y = d3.scaleLinear().range([0, heightBar]).domain([0, d3.max(data, d => d.sepalLength)];
+    const svg = d3.select("#scatterplot");
+    const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+    const width = +svg.attr("width") - margin.left - margin.right;
+    const height = +svg.attr("height") - margin.top - margin.bottom;
 
-      const gBar = svgBar.append("g").attr("transform", "translate(" + marginBar.Left + "," + marginBar.top + ")");
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      gBar.selectAll(".bar").data(data).enter().append("rect").attr("class", "bar").attr("x", (d, i) => x(i.toString())).attr("y",(d, i) => y(d.sepalLength)).attr("width", x.bandwidth())
-      .attr("height", d => heightBar - y(d.sepalLength));
-    </script>
+    // Scales
+    const x = d3.scaleLinear()
+      .domain(d3.extent(data, d => d.time))
+      .range([0, width]);
+
+    const y = d3.scaleLinear()
+      .domain(d3.extent(data, d => d.LAT))
+      .range([height, 0]);
+
+    const r = d3.scaleLinear()
+      .domain(d3.extent(data, d => d.LATU))
+      .range([2, 8]);
+
+    // Axes
+    g.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x).ticks(10));
+
+    g.append("g")
+      .call(d3.axisLeft(y));
+
+    // Scatterplot circles
+    g.selectAll("circle")
+      .data(data)
+      .enter().append("circle")
+      .attr("cx", d => x(d.time))
+      .attr("cy", d => y(d.LAT))
+      .attr("r", d => r(d.LATU))
+      .attr("fill", "black")
+      .attr("opacity", 0.6);
+  </script>
 </body>
 </html>
+
