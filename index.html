@@ -9,16 +9,18 @@
   <h2>Global Temperatures Over Time</h2>
   <div id="chart" style="width: 800px; height: 500px;"></div>
 
+  <!-- Buttons to toggle colormap -->
+  <button id="blackBtn">Black</button>
+  <button id="blueRedBtn">Blue → Red</button>
+  <button id="greenYellowBtn">Green → Yellow</button>
+
   <script>
     async function Scatter() {
       const data = await d3.json("GlobalTemperatures.json");
-      console.log(data);
 
-      // Parse time column into JS Date objects
-      // Adjust format if your JSON is different
       const parseTime = d3.timeParse("%Y-%m-%d"); 
       data.forEach(d => {
-        d.date = parseTime(d.time) || new Date(d.time); // try parsing, fallback if timestamp
+        d.date = parseTime(d.time) || new Date(d.time);
       });
 
       const margin = { top: 20, right: 30, bottom: 40, left: 60 },
@@ -32,7 +34,7 @@
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      // X axis: time scale
+      // X axis
       const x = d3.scaleTime()
         .domain(d3.extent(data, d => d.date))
         .range([0, width]);
@@ -54,8 +56,11 @@
         .domain(d3.extent(data, d => d.LATU))
         .range([1, 6]);
 
-      // Scatterplot points
-      svg.append("g")
+      // Default colormap (black)
+      let color = d3.scaleOrdinal().range(["black"]);
+
+      // Add scatterplot points
+      const circles = svg.append("g")
         .selectAll("circle")
         .data(data)
         .enter()
@@ -63,8 +68,30 @@
           .attr("cx", d => x(d.date))
           .attr("cy", d => y(d.LAT))
           .attr("r", d => r(d.LATU))
-          .attr("fill", "black")
+          .attr("fill", d => color(d.LAT))
           .attr("opacity", 0.6);
+
+      // Button behavior: update colors
+      d3.select("#blackBtn").on("click", () => {
+        circles.transition().duration(500)
+          .attr("fill", "black");
+      });
+
+      d3.select("#blueRedBtn").on("click", () => {
+        const blueRed = d3.scaleSequential()
+          .domain(d3.extent(data, d => d.LAT))
+          .interpolator(d3.interpolateRdBu);  // blue → red
+        circles.transition().duration(500)
+          .attr("fill", d => blueRed(d.LAT));
+      });
+
+      d3.select("#greenYellowBtn").on("click", () => {
+        const greenYellow = d3.scaleSequential()
+          .domain(d3.extent(data, d => d.LAT))
+          .interpolator(d3.interpolateYlGn);  // green → yellow
+        circles.transition().duration(500)
+          .attr("fill", d => greenYellow(d.LAT));
+      });
     }
 
     Scatter();
