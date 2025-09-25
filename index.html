@@ -9,10 +9,8 @@
   <h2>Global Temperatures Over Time</h2>
   <div id="chart" style="width: 800px; height: 500px;"></div>
 
-  <!-- Buttons to toggle colormap -->
-  <button id="blackBtn">Black</button>
-  <button id="blueRedBtn">Blue → Red</button>
-  <button id="greenYellowBtn">Green → Yellow</button>
+  <!-- Buttons  -->
+  <button id="redGreenBtn">Red → Green (LATU)</button>
 
   <script>
     async function Scatter() {
@@ -56,7 +54,7 @@
         .domain(d3.extent(data, d => d.LATU))
         .range([1, 6]);
 
-      // Default colormap (black)
+      // Default colormap (start black until a button is pressed)
       let color = d3.scaleOrdinal().range(["black"]);
 
       // Add scatterplot points
@@ -71,26 +69,13 @@
           .attr("fill", d => color(d.LAT))
           .attr("opacity", 0.6);
 
-      // Button behavior: update colors
-      d3.select("#blackBtn").on("click", () => {
+      // LATU button: continuous red → green scale
+      d3.select("#redGreenBtn").on("click", () => {
+        const redGreen = d3.scaleLinear()
+          .domain(d3.extent(data, d => d.LATU))
+          .range(["red", "green"]);
         circles.transition().duration(500)
-          .attr("fill", "black");
-      });
-
-      d3.select("#blueRedBtn").on("click", () => {
-        const blueRed = d3.scaleSequential()
-          .domain(d3.extent(data, d => d.LAT))
-          .interpolator(d3.interpolateRdBu);  // blue → red
-        circles.transition().duration(500)
-          .attr("fill", d => blueRed(d.LAT));
-      });
-
-      d3.select("#greenYellowBtn").on("click", () => {
-        const greenYellow = d3.scaleSequential()
-          .domain(d3.extent(data, d => d.LAT))
-          .interpolator(d3.interpolateYlGn);  // green → yellow
-        circles.transition().duration(500)
-          .attr("fill", d => greenYellow(d.LAT));
+          .attr("fill", d => redGreen(d.LATU));
       });
     }
 
