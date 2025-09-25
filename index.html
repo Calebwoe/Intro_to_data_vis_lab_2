@@ -9,16 +9,20 @@
   <h2>Global Temperatures Over Time</h2>
   <div id="chart" style="width: 800px; height: 500px;"></div>
 
-  <!-- Buttons  -->
-  <button id="redGreenBtn">Red → Green (LATU)</button>
+  <!-- Buttons to toggle colormaps -->
+  <button id="colormap-button-1">Red → Green</button>
+  <button id="colormap-button-2">Diverging (Red → Yellow → Green)</button>
+  <button id="colormap-button-3">Quantized (5 Bands)</button>
 
   <script>
     async function Scatter() {
       const data = await d3.json("GlobalTemperatures.json");
 
-      const parseTime = d3.timeParse("%Y-%m-%d"); 
+      const parseTime = d3.timeParse("%Y-%m-%d");
       data.forEach(d => {
         d.date = parseTime(d.time) || new Date(d.time);
+        d.LAT = +d.LAT;
+        d.LATU = +d.LATU;
       });
 
       const margin = { top: 20, right: 30, bottom: 40, left: 60 },
@@ -36,16 +40,15 @@
       const x = d3.scaleTime()
         .domain(d3.extent(data, d => d.date))
         .range([0, width]);
-
       svg.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).ticks(10).tickFormat(d3.timeFormat("%Y"))); 
+        .call(d3.axisBottom(x).ticks(10).tickFormat(d3.timeFormat("%Y")));
 
       // Y axis
       const y = d3.scaleLinear()
         .domain(d3.extent(data, d => d.LAT))
+        .nice()
         .range([height, 0]);
-
       svg.append("g")
         .call(d3.axisLeft(y));
 
@@ -54,10 +57,14 @@
         .domain(d3.extent(data, d => d.LATU))
         .range([1, 6]);
 
-      // Default colormap (start black until a button is pressed)
-      let color = d3.scaleOrdinal().range(["black"]);
+      // Default scatterplot (red→green continuous)
+      const minLATU = d3.min(data, d => d.LATU);
+      const maxLATU = d3.max(data, d => d.LATU);
 
-      // Add scatterplot points
+      let colorScale = d3.scaleLinear()
+        .domain([minLATU, maxLATU])
+        .range(["#d7191c", "#1a9641"]);
+
       const circles = svg.append("g")
         .selectAll("circle")
         .data(data)
@@ -66,16 +73,39 @@
           .attr("cx", d => x(d.date))
           .attr("cy", d => y(d.LAT))
           .attr("r", d => r(d.LATU))
-          .attr("fill", d => color(d.LAT))
-          .attr("opacity", 0.6);
+          .attr("fill", d => colorScale(d.LATU))
+          .attr("opacity", 0.75);
 
-      // LATU button: continuous red → green scale
-      d3.select("#redGreenBtn").on("click", () => {
-        const redGreen = d3.scaleLinear()
-          .domain(d3.extent(data, d => d.LATU))
-          .range(["red", "green"]);
-        circles.transition().duration(500)
-          .attr("fill", d => redGreen(d.LATU));
+      // Button 1: Sequential (Red → Green)
+      d3.select("#colormap-button-1").on("click", () => {
+        const sequential = d3.scaleLinear()
+          .domain([minLATU, maxLATU])
+          .range(["#d7191c", "#1a9641"]);
+
+        circles.transition().duration(600)
+          .attr("fill", d => sequential(d.LATU));
+      });
+
+      // Button 2: Diverging (Red → Yellow → Green)
+      d3.select("#colormap-button-2").on("click", () => {
+        const meanLATU = d3.mean(data, d => d.LATU);
+
+        const diverging = d3.scaleDiverging()
+          .domain([minLATU, meanLATU, maxLATU])
+          .interpolator(d3.interpolateRgbBasis(["#d7191c", "#ffffbf", "#1a9641"]));
+
+        circles.transition().duration(600)
+          .attr("fill", d => diverging(d.LATU));
+      });
+
+      // Button 3: Quantized (5 bands)
+      d3.select("#colormap-button-3").on("click", () => {
+        const quantized = d3.scaleQuantize()
+          .domain([minLATU, maxLATU])
+          .range(["#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#1a9641"]);
+
+        circles.transition().duration(600)
+          .attr("fill", d => quantized(d.LATU));
       });
     }
 
