@@ -18,9 +18,9 @@
     async function Scatter() {
       const data = await d3.json("GlobalTemperatures.json");
 
-      const parseTime = d3.timeParse("%Y-%m-%d");
+      const parseTime = d3.timeParse("%Y%m%d");
 data.forEach(d => {
-  d.date = parseTime(d.time) || new Date(d.time);
+  d.date = parseTime(d.time.toString());
 });
       const margin = { top: 20, right: 30, bottom: 40, left: 60 },
             width = 800 - margin.left - margin.right,
@@ -59,7 +59,7 @@ data.forEach(d => {
       const maxLATU = d3.max(data, d => d.LATU);
 
       let colorScale = d3.scaleLinear()
-        .domain([minLATU, maxLATU])
+        .domain([maxLATU, minLATU])
         .range(["#d7191c", "#1a9641"]);
 
       const circles = svg.append("g")
@@ -76,7 +76,7 @@ data.forEach(d => {
       // Button 1: Sequential (Red -> Green)
       d3.select("#colormap-button-1").on("click", () => {
         const sequential = d3.scaleLinear()
-          .domain([minLATU, maxLATU])
+          .domain([maxLATU, minLATU])
           .range(["#d7191c", "#1a9641"]);
 
         circles.transition().duration(600)
@@ -88,7 +88,7 @@ data.forEach(d => {
         const meanLATU = d3.mean(data, d => d.LATU);
 
         const diverging = d3.scaleDiverging()
-          .domain([minLATU, meanLATU, maxLATU])
+          .domain([maxLATU, meanLATU, minLATU])
           .interpolator(d3.interpolateRgbBasis(["#d7191c", "#ffffbf", "#1a9641"]));
 
         circles.transition().duration(600)
@@ -98,7 +98,7 @@ data.forEach(d => {
       // Button 3: Quantized (5 Colors)
       d3.select("#colormap-button-3").on("click", () => {
         const quantized = d3.scaleQuantize()
-          .domain([minLATU, maxLATU])
+          .domain([maxLATU, minLATU])
           .range(["#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#1a9641"]);
 
         circles.transition().duration(600)
