@@ -10,8 +10,8 @@
   <div id="chart" style="width: 800px; height: 500px;"></div>
 
   <!-- Buttons to toggle colormaps -->
-  <button id="colormap-button-1">Red → Green</button>
-  <button id="colormap-button-2">Diverging (Red → Yellow → Green)</button>
+  <button id="colormap-button-1">Red ->Green</button>
+  <button id="colormap-button-2">Diverging (Red -> Yellow -> Green)</button>
   <button id="colormap-button-3">Quantized (5 Bands)</button>
 
   <script>
@@ -19,12 +19,9 @@
       const data = await d3.json("GlobalTemperatures.json");
 
       const parseTime = d3.timeParse("%Y-%m-%d");
-      data.forEach(d => {
-        d.date = parseTime(d.time) || new Date(d.time);
-        d.LAT = +d.LAT;
-        d.LATU = +d.LATU;
-      });
-
+data.forEach(d => {
+  d.date = parseTime(d.time) || new Date(d.time);
+});
       const margin = { top: 20, right: 30, bottom: 40, left: 60 },
             width = 800 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
@@ -76,7 +73,7 @@
           .attr("fill", d => colorScale(d.LATU))
           .attr("opacity", 0.75);
 
-      // Button 1: Sequential (Red → Green)
+      // Button 1: Sequential (Red -> Green)
       d3.select("#colormap-button-1").on("click", () => {
         const sequential = d3.scaleLinear()
           .domain([minLATU, maxLATU])
@@ -86,7 +83,7 @@
           .attr("fill", d => sequential(d.LATU));
       });
 
-      // Button 2: Diverging (Red → Yellow → Green)
+      // Button 2: Diverging (Red -> Yellow -> Green)
       d3.select("#colormap-button-2").on("click", () => {
         const meanLATU = d3.mean(data, d => d.LATU);
 
@@ -98,7 +95,7 @@
           .attr("fill", d => diverging(d.LATU));
       });
 
-      // Button 3: Quantized (5 bands)
+      // Button 3: Quantized (5 Colors)
       d3.select("#colormap-button-3").on("click", () => {
         const quantized = d3.scaleQuantize()
           .domain([minLATU, maxLATU])
