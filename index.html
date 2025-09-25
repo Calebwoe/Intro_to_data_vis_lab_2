@@ -11,9 +11,15 @@
 
   <script>
     async function Scatter() {
-      
       const data = await d3.json("GlobalTemperatures.json");
       console.log(data);
+
+      // Parse time column into JS Date objects
+      // Adjust format if your JSON is different
+      const parseTime = d3.timeParse("%Y-%m-%d"); 
+      data.forEach(d => {
+        d.date = parseTime(d.time) || new Date(d.time); // try parsing, fallback if timestamp
+      });
 
       const margin = { top: 20, right: 30, bottom: 40, left: 60 },
             width = 800 - margin.left - margin.right,
@@ -26,14 +32,14 @@
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      // X axis
-      const x = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.time))
+      // X axis: time scale
+      const x = d3.scaleTime()
+        .domain(d3.extent(data, d => d.date))
         .range([0, width]);
 
       svg.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).ticks(10));
+        .call(d3.axisBottom(x).ticks(10).tickFormat(d3.timeFormat("%Y"))); 
 
       // Y axis
       const y = d3.scaleLinear()
@@ -54,7 +60,7 @@
         .data(data)
         .enter()
         .append("circle")
-          .attr("cx", d => x(d.time))
+          .attr("cx", d => x(d.date))
           .attr("cy", d => y(d.LAT))
           .attr("r", d => r(d.LATU))
           .attr("fill", "black")
