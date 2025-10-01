@@ -25,7 +25,7 @@
       // Load CSV
       const data = await d3.csv("GlobalTemperatures.csv", d => {
         return {
-          date: d3.timeParse("%Y-%m-%d")(d.dt),
+          date: parseDate(d.dt),
           land: +d.LandAverageTemperature,
           landUncertainty: +d.LandAverageTemperatureUncertainty,
           landOcean: +d.LandAndOceanAverageTemperature,
