@@ -15,14 +15,16 @@
   <button id="colormap-button-3">Quantized (5 Colors)</button>
 
   <script>
-    async function Scatter() 
-      const data = await d3.csv("C:\Users\Caleb Woessner\Downloads\GlobalTemperatures.csv", d => {
-  return {
-    date: d3.timeParse("%Y%m%d")(d.time), // parse the date
-    temperature: +d.temperature           // convert string → number
-  };
-});
- 
+    async function Scatter() {
+      const data = await d3.csv("GlobalTemperatures.csv", d => {
+        return {
+          date: d3.timeParse("%Y%m%d")(d.time),
+          LAT: +d.LAT,
+          LATU: +d.LATU,
+          temperature: +d.temperature
+        };
+      });
+
       const margin = { top: 20, right: 30, bottom: 40, left: 60 },
             width = 800 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
@@ -35,27 +37,27 @@
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
       // X axis
-      const x = d3.scaleTime()
+      const cxScale = d3.scaleTime()
         .domain(d3.extent(data, d => d.date))
         .range([0, width]);
       svg.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).ticks(10).tickFormat(d3.timeFormat("%Y")));
+        .call(d3.axisBottom(cxScale).ticks(10).tickFormat(d3.timeFormat("%Y")));
 
       // Y axis
-      const y = d3.scaleLinear()
+      const cyScale = d3.scaleLinear()
         .domain(d3.extent(data, d => d.LAT))
         .nice()
         .range([height, 0]);
       svg.append("g")
-        .call(d3.axisLeft(y));
+        .call(d3.axisLeft(cyScale));
 
       // Radius scale
-      const r = d3.scaleLinear()
+      const rScale = d3.scaleLinear()
         .domain(d3.extent(data, d => d.LATU))
         .range([1, 6]);
 
-      // Default scatterplot (red→green continuous)
+      // Default colormap
       const minLATU = d3.min(data, d => d.LATU);
       const maxLATU = d3.max(data, d => d.LATU);
 
@@ -64,17 +66,17 @@
         .range(["#d7191c", "#1a9641"]);
 
       const circles = svg.append("g")
-  .selectAll("circle")
-  .data(data)
-  .enter()
-  .append("circle")
-    .attr("cx", d => cxScale(d.date))   // assignment requires cxScale
-    .attr("cy", d => cyScale(d.LAT))    // assignment requires cyScale
-    .attr("r", d => rScale(d.LATU))
-    .attr("fill", d => colorScale(d.LATU))
-    .attr("opacity", 0.75);
+        .selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+          .attr("cx", d => cxScale(d.date))
+          .attr("cy", d => cyScale(d.LAT))
+          .attr("r", d => rScale(d.LATU))
+          .attr("fill", d => colorScale(d.LATU))
+          .attr("opacity", 0.75);
 
-      // Button 1: Sequential (Red -> Green)
+      // Button 1: Sequential
       d3.select("#colormap-button-1").on("click", () => {
         const sequential = d3.scaleLinear()
           .domain([minLATU, maxLATU])
@@ -84,10 +86,9 @@
           .attr("fill", d => sequential(d.LATU));
       });
 
-      // Button 2: Diverging (Red -> Yellow -> Green)
+      // Button 2: Diverging
       d3.select("#colormap-button-2").on("click", () => {
         const meanLATU = d3.mean(data, d => d.LATU);
-
         const diverging = d3.scaleDiverging()
           .domain([minLATU, meanLATU, maxLATU])
           .interpolator(d3.interpolateRgbBasis(["#d7191c", "#ffffbf", "#1a9641"]));
@@ -96,7 +97,7 @@
           .attr("fill", d => diverging(d.LATU));
       });
 
-      // Button 3: Quantized (5 Colors)
+      // Button 3: Quantized
       d3.select("#colormap-button-3").on("click", () => {
         const quantized = d3.scaleQuantize()
           .domain([minLATU, maxLATU])
@@ -111,4 +112,3 @@
   </script>
 </body>
 </html>
-
