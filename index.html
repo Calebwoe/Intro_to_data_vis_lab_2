@@ -41,7 +41,7 @@
       const width = 800 - margin.left - margin.right;
       const height = 500 - margin.top - margin.bottom;
 
-      const svg = d3.select("#chart")
+      const svg = d3.select("#scatterplot_1")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -73,7 +73,7 @@
           .attr("cx", d => cxScale(d.time))
           .attr("cy", d => cyScale(d.LAT))
           .attr("r", d => rScale(d.LOATU))
-          .attr("fill", colorScale(d.LOAT)
+          .attr("fill", colorScale(d.LOAT))
           .attr("opacity", 0.7);
 
       // X Axis
