@@ -5,24 +5,14 @@
   <title>Global Temperatures Scatterplot</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
-    .x-axis path,
-    .x-axis line,
-    .y-axis path,
-    .y-axis line {
-      stroke: #333;
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: black;
       shape-rendering: crispEdges;
     }
-
-    .x-axis text,
-    .y-axis text {
+    .axis text {
       font-size: 12px;
-      fill: #333;
-    }
-
-    .axis-label {
-      font-size: 14px;
-      font-weight: bold;
-      fill: #000;
     }
   </style>
 </head>
@@ -30,26 +20,22 @@
   <h2>Global Temperatures Over Time</h2>
   <div id="chart" style="width: 800px; height: 500px;"></div>
 
-  <!-- Buttons to toggle colormaps -->
-  <button id="colormap-button-1">Red -> Green</button>
-  <button id="colormap-button-2">Diverging (Red -> Yellow -> Green)</button>
-  <button id="colormap-button-3">Quantized (5 Colors)</button>
-
   <script>
     async function Scatter() {
-      // Load CSV 
+      // Load CSV
       const data = await d3.csv("GlobalTemperatures.csv", d => {
         return {
-          date: d3.timeParse("%Y%m%d")(d.time), 
-          LAT: +d.LAT,
-          LATU: +d.LATU,
-          temperature: +d.temperature
+          date: d3.timeParse("%Y-%m-%d")(d.dt),
+          land: +d.LandAverageTemperature,
+          landUncertainty: +d.LandAverageTemperatureUncertainty,
+          landOcean: +d.LandAndOceanAverageTemperature,
+          landOceanUncertainty: +d.LandAndOceanAverageTemperatureUncertainty
         };
       });
 
-      const margin = { top: 20, right: 30, bottom: 50, left: 70 },
-            width = 800 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+      const margin = {top: 20, right: 30, bottom: 50, left: 60};
+      const width = 800 - margin.left - margin.right;
+      const height = 500 - margin.top - margin.bottom;
 
       const svg = d3.select("#chart")
         .append("svg")
@@ -58,114 +44,61 @@
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      // Scales
+      // X scale = time
       const cxScale = d3.scaleTime()
         .domain(d3.extent(data, d => d.date))
         .range([0, width]);
 
+      // Y scale = land average temperature
       const cyScale = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.LAT))
-        .nice()
+        .domain(d3.extent(data, d => d.land))
         .range([height, 0]);
 
+      // Radius scale (sqrt)
       const rScale = d3.scaleSqrt()
-        .domain(d3.extent(data, d => d.LATU))
-        .range([10, 20]);  // radius 10–20
+        .domain(d3.extent(data, d => d.landOceanUncertainty))
+        .range([10, 20]);
 
-      const minLATU = d3.min(data, d => d.LATU);
-      const maxLATU = d3.max(data, d => d.LATU);
-
-      let colorScale = d3.scaleLinear()
-        .domain([minLATU, maxLATU])
-        .range(["#d7191c", "#1a9641"]);
-
-      // X axis
-      svg.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(cxScale).ticks(10).tickFormat(d3.timeFormat("%Y")));
-
-      // Y axis
-      svg.append("g")
-        .attr("class", "y-axis")
-        .call(d3.axisLeft(cyScale));
-
-      // Axis labels
-      svg.append("text")
-        .attr("class", "axis-label")
-        .attr("x", width / 2)
-        .attr("y", height + margin.bottom - 10)
-        .style("text-anchor", "middle")
-        .text("Year");
-
-      svg.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -height / 2)
-        .attr("y", -margin.left + 20)
-        .style("text-anchor", "middle")
-        .text("Latitude (LAT)");
-
-      // Scatterplot circles
-      const circles = svg.append("g")
-        .selectAll("circle")
+      // Draw circles
+      svg.selectAll("circle")
         .data(data)
         .enter()
         .append("circle")
           .attr("cx", d => cxScale(d.date))
-          .attr("cy", d => cyScale(d.LAT))
-          .attr("r", d => rScale(d.LATU))
-          .attr("fill", d => colorScale(d.LATU))
-          .attr("opacity", 0.75);
+          .attr("cy", d => cyScale(d.land))
+          .attr("r", d => rScale(d.landOceanUncertainty))
+          .attr("fill", "steelblue")
+          .attr("opacity", 0.7);
 
-      // Button 1: Sequential (Red -> Green)
-      d3.select("#colormap-button-1").on("click", () => {
-        const sequential = d3.scaleLinear()
-          .domain([minLATU, maxLATU])
-          .range(["#d7191c", "#1a9641"]);
+      // X Axis
+      const xAxis = d3.axisBottom(cxScale);
+      svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", `translate(0,${height})`)
+        .call(xAxis);
 
-        circles.transition().duration(600)
-          .attr("fill", d => sequential(d.LATU));
-      });
+      // Y Axis
+      const yAxis = d3.axisLeft(cyScale);
+      svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
 
-      // Button 2: Diverging (Red -> Yellow -> Green)
-      d3.select("#colormap-button-2").on("click", () => {
-        const meanLATU = d3.mean(data, d => d.LATU);
-        const diverging = d3.scaleDiverging()
-          .domain([minLATU, meanLATU, maxLATU])
-          .interpolator(d3.interpolateRgbBasis(["#d7191c", "#ffffbf", "#1a9641"]));
+      // Axis labels
+      svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom - 10)
+        .attr("text-anchor", "middle")
+        .text("Date");
 
-        circles.transition().duration(600)
-          .attr("fill", d => diverging(d.LATU));
-      });
-
-      // Button 3: Quantized (5 Colors)
-      //Updated Color so it is not blue
-      d3.select("#colormap-button-3").on("click", () => {
-        const quantized = d3.scaleQuantize()
-          .domain([minLATU, maxLATU])
-          .range(["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"]);
-
-        circles.transition().duration(600)
-          .attr("fill", d => quantized(d.LATU));
-      });
+      svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 15)
+        .attr("x", -height / 2)
+        .attr("text-anchor", "middle")
+        .text("Land Average Temperature (°C)");
     }
 
     Scatter();
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
