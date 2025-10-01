@@ -22,21 +22,24 @@
 
   <script>
     async function Scatter() {
-      // Load CSV
+      
       const parseDate = d3.timeParse("%Y-%m-%d");
+      // Load CSV
       const data = (await d3.csv("GlobalTemperatures.csv", d => {
-  const date = parseDate(d.dt);
-  const land = +d.LandAverageTemperature;
-  const landOceanUncertainty = +d.LandAndOceanAverageTemperatureUncertainty;
-  
+  const time = parseDate(d.dt);
+  const LAT = +d.LandAverageTemperature;
+  const LATU = +d.LandAndOceanAverageTemperatureUncertainty;
+  const LOAT = +d.LandAndOceanAverageTemperature;
+  const LOATU = +d.LandAndOceanAverageTemperatureUncertainty;
+        
   if (!date || isNaN(land) || isNaN(landOceanUncertainty)) return null;
   
   return {
-    date,
-    land,
-    landUncertainty: +d.LandAverageTemperatureUncertainty,
-    landOcean: +d.LandAndOceanAverageTemperature,
-    landOceanUncertainty
+    time,
+    LAT,
+    LATU,
+    LOAT,
+    LOATU
   };
 })).filter(d => d !== null);
 
@@ -51,30 +54,32 @@
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      // X scale = time
+      // X scale
       const cxScale = d3.scaleTime()
-        .domain(d3.extent(data, d => d.date))
+        .domain(d3.extent(data, d => d.time))
         .range([0, width]);
 
-      // Y scale = land average temperature
+      // Y scale
       const cyScale = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.land))
+        .domain(d3.extent(data, d => d.LAT))
         .range([height, 0]);
 
-      // Radius scale (sqrt)
+      // Radius scale 
       const rScale = d3.scaleSqrt()
-        .domain(d3.extent(data, d => d.landOceanUncertainty))
+        .domain(d3.extent(data, d => d.LOATU))
         .range([10, 20]);
-
+      //Color Scale
+      const colorScale = d3.scaleSequential(d3.interpolateTurbo)
+        .domain(d3.extent(data, d => d.LOAT));
       // Draw circles
       svg.selectAll("circle")
         .data(data)
         .enter()
         .append("circle")
-          .attr("cx", d => cxScale(d.date))
-          .attr("cy", d => cyScale(d.land))
-          .attr("r", d => rScale(d.landOceanUncertainty))
-          .attr("fill", "steelblue")
+          .attr("cx", d => cxScale(d.time))
+          .attr("cy", d => cyScale(d.LAT))
+          .attr("r", d => rScale(d.LOAT))
+          .attr("fill", colorScale(d.LOAT)
           .attr("opacity", 0.7);
 
       // X Axis
@@ -102,7 +107,7 @@
         .attr("y", -margin.left + 15)
         .attr("x", -height / 2)
         .attr("text-anchor", "middle")
-        .text("Land Average Temperature (°C)");
+        .text("Land Average Temperature");
     }
 
     Scatter();
