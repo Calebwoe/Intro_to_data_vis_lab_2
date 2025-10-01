@@ -18,31 +18,25 @@
 </head>
 <body>
   <h2>Global Temperatures Over Time</h2>
-  <div id="chart" style="width: 800px; height: 500px;"></div>
+  <div id="scatterplot_1" style="width: 800px; height: 500px;"></div>
 
   <script>
     async function Scatter() {
       
       const parseDate = d3.timeParse("%Y-%m-%d");
       // Load CSV
-      const data = (await d3.csv("GlobalTemperatures.csv", d => {
+  const data = (await d3.csv("GlobalTemperatures.csv", d => {
   const time = parseDate(d.dt);
   const LAT = +d.LandAverageTemperature;
-  const LATU = +d.LandAndOceanAverageTemperatureUncertainty;
+  const LATU = +d.LandAverageTemperatureUncertainty;
   const LOAT = +d.LandAndOceanAverageTemperature;
   const LOATU = +d.LandAndOceanAverageTemperatureUncertainty;
-        
-  if (!date || isNaN(land) || isNaN(landOceanUncertainty)) return null;
-  
-  return {
-    time,
-    LAT,
-    LATU,
-    LOAT,
-    LOATU
-  };
-})).filter(d => d !== null);
 
+  if (!time || isNaN(LAT) || isNaN(LOATU)) return null;
+
+  return { time, LAT, LATU, LOAT, LOATU };
+      })).filter(d => d !== null);
+      
       const margin = {top: 20, right: 30, bottom: 50, left: 60};
       const width = 800 - margin.left - margin.right;
       const height = 500 - margin.top - margin.bottom;
@@ -78,7 +72,7 @@
         .append("circle")
           .attr("cx", d => cxScale(d.time))
           .attr("cy", d => cyScale(d.LAT))
-          .attr("r", d => rScale(d.LOAT))
+          .attr("r", d => rScale(d.LOATU))
           .attr("fill", colorScale(d.LOAT)
           .attr("opacity", 0.7);
 
