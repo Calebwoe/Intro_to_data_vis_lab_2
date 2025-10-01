@@ -22,22 +22,21 @@
 
   <script>
     async function Scatter() {
-      
       const parseDate = d3.timeParse("%Y-%m-%d");
+
       // Load CSV
-  const data = (await d3.csv("GlobalTemperatures.csv", d => {
-  const time = parseDate(d.dt);
-  const LAT = +d.LandAverageTemperature;
-  const LATU = +d.LandAverageTemperatureUncertainty;
-  const LOAT = +d.LandAndOceanAverageTemperature;
-  const LOATU = +d.LandAndOceanAverageTemperatureUncertainty;
+      const data = (await d3.csv("GlobalTemperatures.csv", d => {
+        const time = parseDate(d.dt);
+        const LAT = +d.LandAverageTemperature;
+        const LATU = +d.LandAverageTemperatureUncertainty;
+        const LOAT = +d.LandAndOceanAverageTemperature;
+        const LOATU = +d.LandAndOceanAverageTemperatureUncertainty;
 
-  if (!time || isNaN(LAT) || isNaN(LOATU)) return null;
-
-  return { time, LAT, LATU, LOAT, LOATU };
+        if (!time || isNaN(LAT) || isNaN(LOATU)) return null;
+        return { time, LAT, LATU, LOAT, LOATU };
       })).filter(d => d !== null);
-      
-      const margin = {top: 20, right: 30, bottom: 50, left: 60};
+
+      const margin = { top: 20, right: 30, bottom: 50, left: 60 };
       const width = 800 - margin.left - margin.right;
       const height = 500 - margin.top - margin.bottom;
 
@@ -53,18 +52,25 @@
         .domain(d3.extent(data, d => d.time))
         .range([0, width]);
 
-      // Y scale
+      // Y scale (with padding)
       const cyScale = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.LAT))
+        .domain([
+          d3.min(data, d => d.LAT) - 1,
+          d3.max(data, d => d.LAT) + 1
+        ])
         .range([height, 0]);
 
       // Radius scale 
       const rScale = d3.scaleSqrt()
         .domain(d3.extent(data, d => d.LOATU))
-        .range([10, 20]);
-      //Color Scale
-      const colorScale = d3.scaleSequential(d3.interpolateTurbo)
-        .domain(d3.extent(data, d => d.LOAT));
+        .range([2, 8]);
+
+      // Color scale
+      const loatExtent = d3.extent(data, d => d.LOAT);
+      const colorScale = d3.scaleSequential()
+        .interpolator(d3.interpolateTurbo)
+        .domain([loatExtent[0], loatExtent[1]]);
+
       // Draw circles
       svg.selectAll("circle")
         .data(data)
@@ -73,21 +79,19 @@
           .attr("cx", d => cxScale(d.time))
           .attr("cy", d => cyScale(d.LAT))
           .attr("r", d => rScale(d.LOATU))
-          .attr("fill", colorScale(d.LOAT))
+          .attr("fill", d => colorScale(d.LOAT))   // ✅ fixed
           .attr("opacity", 0.7);
 
       // X Axis
-      const xAxis = d3.axisBottom(cxScale);
       svg.append("g")
         .attr("class", "x axis")
         .attr("transform", `translate(0,${height})`)
-        .call(xAxis);
+        .call(d3.axisBottom(cxScale));
 
       // Y Axis
-      const yAxis = d3.axisLeft(cyScale);
       svg.append("g")
         .attr("class", "y axis")
-        .call(yAxis);
+        .call(d3.axisLeft(cyScale));
 
       // Axis labels
       svg.append("text")
