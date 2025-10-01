@@ -37,10 +37,10 @@
 
   <script>
     async function Scatter() {
-      // Load CSV (make sure GlobalTemperatures.csv is in same folder as this HTML)
+      // Load CSV 
       const data = await d3.csv("GlobalTemperatures.csv", d => {
         return {
-          date: d3.timeParse("%Y%m%d")(d.time), // adjust if your date format differs
+          date: d3.timeParse("%Y%m%d")(d.time), 
           LAT: +d.LAT,
           LATU: +d.LATU,
           temperature: +d.temperature
@@ -140,6 +140,7 @@
       });
 
       // Button 3: Quantized (5 Colors)
+      //Updated Color so it is not blue
       d3.select("#colormap-button-3").on("click", () => {
         const quantized = d3.scaleQuantize()
           .domain([minLATU, maxLATU])
