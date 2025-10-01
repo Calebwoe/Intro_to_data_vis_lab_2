@@ -15,13 +15,14 @@
   <button id="colormap-button-3">Quantized (5 Colors)</button>
 
   <script>
-    async function Scatter() {
-      const data = await d3.json("GlobalTemperatures.json");
-
-      const parseTime = d3.timeParse("%Y%m%d");
-data.forEach(d => {
-  d.date = parseTime(d.time.toString());
+    async function Scatter() 
+      const data = await d3.csv("C:\Users\Caleb Woessner\Downloads\GlobalTemperatures.csv", d => {
+  return {
+    date: d3.timeParse("%Y%m%d")(d.time), // parse the date
+    temperature: +d.temperature           // convert string → number
+  };
 });
+ 
       const margin = { top: 20, right: 30, bottom: 40, left: 60 },
             width = 800 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
@@ -63,15 +64,15 @@ data.forEach(d => {
         .range(["#d7191c", "#1a9641"]);
 
       const circles = svg.append("g")
-        .selectAll("circle")
-        .data(data)
-        .enter()
-        .append("circle")
-          .attr("cx", d => x(d.date))
-          .attr("cy", d => y(d.LAT))
-          .attr("r", d => r(d.LATU))
-          .attr("fill", d => colorScale(d.LATU))
-          .attr("opacity", 0.75);
+  .selectAll("circle")
+  .data(data)
+  .enter()
+  .append("circle")
+    .attr("cx", d => cxScale(d.date))   // assignment requires cxScale
+    .attr("cy", d => cyScale(d.LAT))    // assignment requires cyScale
+    .attr("r", d => rScale(d.LATU))
+    .attr("fill", d => colorScale(d.LATU))
+    .attr("opacity", 0.75);
 
       // Button 1: Sequential (Red -> Green)
       d3.select("#colormap-button-1").on("click", () => {
