@@ -23,6 +23,7 @@
   <script>
     async function Scatter() {
       // Load CSV
+      const parseDate = d3.timeParse("%Y-%m-%d");
       const data = await d3.csv("GlobalTemperatures.csv", d => {
         return {
           date: parseDate(d.dt),
