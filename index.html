@@ -4,28 +4,50 @@
   <meta charset="UTF-8">
   <title>Global Temperatures Scatterplot</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .x-axis path,
+    .x-axis line,
+    .y-axis path,
+    .y-axis line {
+      stroke: #333;
+      shape-rendering: crispEdges;
+    }
+
+    .x-axis text,
+    .y-axis text {
+      font-size: 12px;
+      fill: #333;
+    }
+
+    .axis-label {
+      font-size: 14px;
+      font-weight: bold;
+      fill: #000;
+    }
+  </style>
 </head>
 <body>
   <h2>Global Temperatures Over Time</h2>
   <div id="chart" style="width: 800px; height: 500px;"></div>
 
   <!-- Buttons to toggle colormaps -->
-  <button id="colormap-button-1">Red ->Green</button>
+  <button id="colormap-button-1">Red -> Green</button>
   <button id="colormap-button-2">Diverging (Red -> Yellow -> Green)</button>
   <button id="colormap-button-3">Quantized (5 Colors)</button>
 
   <script>
     async function Scatter() {
+      // Load CSV (make sure GlobalTemperatures.csv is in same folder as this HTML)
       const data = await d3.csv("GlobalTemperatures.csv", d => {
         return {
-          date: d3.timeParse("%Y%m%d")(d.time),
+          date: d3.timeParse("%Y%m%d")(d.time), // adjust if your date format differs
           LAT: +d.LAT,
           LATU: +d.LATU,
           temperature: +d.temperature
         };
       });
 
-      const margin = { top: 20, right: 30, bottom: 40, left: 60 },
+      const margin = { top: 20, right: 30, bottom: 50, left: 70 },
             width = 800 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
 
@@ -36,28 +58,20 @@
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-      // X axis
+      // Scales
       const cxScale = d3.scaleTime()
         .domain(d3.extent(data, d => d.date))
         .range([0, width]);
-      svg.append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(cxScale).ticks(10).tickFormat(d3.timeFormat("%Y")));
 
-      // Y axis
       const cyScale = d3.scaleLinear()
         .domain(d3.extent(data, d => d.LAT))
         .nice()
         .range([height, 0]);
-      svg.append("g")
-        .call(d3.axisLeft(cyScale));
 
-      // Radius scale
-      const rScale = d3.scaleLinear()
+      const rScale = d3.scaleSqrt()
         .domain(d3.extent(data, d => d.LATU))
-        .range([1, 6]);
+        .range([10, 20]);  // radius 10–20
 
-      // Default colormap
       const minLATU = d3.min(data, d => d.LATU);
       const maxLATU = d3.max(data, d => d.LATU);
 
@@ -65,6 +79,34 @@
         .domain([minLATU, maxLATU])
         .range(["#d7191c", "#1a9641"]);
 
+      // X axis
+      svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(cxScale).ticks(10).tickFormat(d3.timeFormat("%Y")));
+
+      // Y axis
+      svg.append("g")
+        .attr("class", "y-axis")
+        .call(d3.axisLeft(cyScale));
+
+      // Axis labels
+      svg.append("text")
+        .attr("class", "axis-label")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom - 10)
+        .style("text-anchor", "middle")
+        .text("Year");
+
+      svg.append("text")
+        .attr("class", "axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -margin.left + 20)
+        .style("text-anchor", "middle")
+        .text("Latitude (LAT)");
+
+      // Scatterplot circles
       const circles = svg.append("g")
         .selectAll("circle")
         .data(data)
@@ -76,7 +118,7 @@
           .attr("fill", d => colorScale(d.LATU))
           .attr("opacity", 0.75);
 
-      // Button 1: Sequential
+      // Button 1: Sequential (Red -> Green)
       d3.select("#colormap-button-1").on("click", () => {
         const sequential = d3.scaleLinear()
           .domain([minLATU, maxLATU])
@@ -86,7 +128,7 @@
           .attr("fill", d => sequential(d.LATU));
       });
 
-      // Button 2: Diverging
+      // Button 2: Diverging (Red -> Yellow -> Green)
       d3.select("#colormap-button-2").on("click", () => {
         const meanLATU = d3.mean(data, d => d.LATU);
         const diverging = d3.scaleDiverging()
@@ -97,7 +139,7 @@
           .attr("fill", d => diverging(d.LATU));
       });
 
-      // Button 3: Quantized
+      // Button 3: Quantized (5 Colors)
       d3.select("#colormap-button-3").on("click", () => {
         const quantized = d3.scaleQuantize()
           .domain([minLATU, maxLATU])
@@ -112,3 +154,17 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
