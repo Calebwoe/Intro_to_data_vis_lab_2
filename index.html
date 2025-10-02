@@ -92,20 +92,7 @@
   const yAxis = d3.axisLeft(cyScale);
     svg.append("g")
     .call(yAxis);
-// X Axis Label
-svg.append("text")
-  .attr("x", width / 2)
-  .attr("y", height + 40)   // a little below x-axis
-  .attr("text-anchor", "middle")
-  .text("Year");
-
-// Y Axis Label
-svg.append("text")
-  .attr("transform", "rotate(-90)")
-  .attr("y", -50)   // to the left of y-axis
-  .attr("x", -height / 2)
-  .attr("text-anchor", "middle")
-  .text("Land Avg Temp (C)");
+    svg.append("text") .attr("x", width / 2) .attr("y", height + margin.bottom - 10) .attr("text-anchor", "middle") .text("Date"); svg.append("text") .attr("transform", "rotate(-90)") .attr("y", -margin.left + 15) .attr("x", -height / 2) .attr("text-anchor", "middle") .text("Land Average Temperature (C)");
     }
     Scatter();
   </script>
