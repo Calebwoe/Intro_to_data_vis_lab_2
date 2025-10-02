@@ -80,21 +80,16 @@
       .attr("cy", function(d) { return cyScale(d.LAT); });
 
       // X Axis
-    const xAxis = d3.axisBottom(cxScale)
-      .ticks(10)
-    .tickFormat(d3.timeFormat("%Y"));
+    const xAxis = d3.axisBottom(cxScale);
 
     svg.append("g")
     .attr("class", "x axis")
-    .attr("transform", `translate(0, ${height})`)  // place at bottom
+    .attr("transform", `translate(0, ${height})`)  
     .call(xAxis);
 
   // Y Axis
-  const yAxis = d3.axisLeft(cyScale)
-    .ticks(8);
-
+  const yAxis = d3.axisLeft(cyScale);
     svg.append("g")
-    .attr("class", "y axis")
     .call(yAxis);
 
     }
