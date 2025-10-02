@@ -80,23 +80,6 @@
       .attr("cx", function(d) { return cxScale(d.time); })
       .attr("cy", function(d) { return cyScale(d.LAT); });
 
-     // X label
-svg.append("text")
-  .attr("x", width / 2)
-  .attr("y", height + 40)  // slightly below x-axis
-  .attr("text-anchor", "middle")
-  .style("font-size", "14px")
-  .text("Date");
-
-// Y label
-svg.append("text")
-  .attr("transform", "rotate(-90)")
-  .attr("x", -height / 2)
-  .attr("y", -50)  // left of y-axis
-  .attr("text-anchor", "middle")
-  .style("font-size", "14px")
-  .text("Land Average Temperature (°C)");
-
     }
     Scatter();
   </script>
