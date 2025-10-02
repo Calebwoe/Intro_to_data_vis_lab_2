@@ -80,19 +80,23 @@
       .attr("cx", function(d) { return cxScale(d.time); })
       .attr("cy", function(d) { return cyScale(d.LAT); });
 
-      // X Axis
-    const xAxis = d3.axisBottom(cxScale);
+     // X label
+svg.append("text")
+  .attr("x", width / 2)
+  .attr("y", height + 40)  // slightly below x-axis
+  .attr("text-anchor", "middle")
+  .style("font-size", "14px")
+  .text("Date");
 
-    svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", `translate(0, ${height})`)  
-    .call(xAxis);
+// Y label
+svg.append("text")
+  .attr("transform", "rotate(-90)")
+  .attr("x", -height / 2)
+  .attr("y", -50)  // left of y-axis
+  .attr("text-anchor", "middle")
+  .style("font-size", "14px")
+  .text("Land Average Temperature (°C)");
 
-  // Y Axis
-  const yAxis = d3.axisLeft(cyScale);
-    svg.append("g")
-    .call(yAxis);
-    svg.append("text") .attr("x", width / 2) .attr("y", height + margin.bottom - 10) .attr("text-anchor", "middle") .text("Date"); svg.append("text") .attr("transform", "rotate(-90)") .attr("y", -margin.left + 15) .attr("x", -height / 2) .attr("text-anchor", "middle") .text("Land Average Temperature (C)");
     }
     Scatter();
   </script>
