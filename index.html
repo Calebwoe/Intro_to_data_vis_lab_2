@@ -22,11 +22,11 @@
       const parseDate = d3.timeParse("%Y-%m-%d")
       const data = await d3.csv("GlobalTemperatures.csv", d => {
         return {
-          d.time =  parseDate(d.dt),
-          d.LAT = +d.LandAverageTemperature,
-          d.LATU = +d.LandAverageTemperatureUncertainty,
-          d.LOAT = +d.LandAndOceanAverageTemperature,
-          d.LOATU = +d.LandAndOceanAverageTemperatureUncertainty
+          time: parseDate(d.dt), 
+          LAT: +d.LandAverageTemperature,
+          LATU: +d.LandAverageTemperatureUncertainty,
+          LOAT: +d.LandAndOceanAverageTemperature,
+          LOATU: +d.LandAndOceanAverageTemperatureUncertaint
         };
       });
     console.log(data);
