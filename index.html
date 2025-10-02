@@ -6,14 +6,9 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     .axis path,
-    .axis line {
-      fill: none;
-      stroke: black;
-      shape-rendering: crispEdges;
+    .axis line {fill: none; stroke: #000;
     }
-    .axis text {
-      font-size: 12px;
-    }
+    .axis text {font-size: 12px; }
   </style>
 </head>
 <body>
@@ -22,12 +17,11 @@
 
   <script>
     async function Scatter() {
-      const parseDate = d3.timeParse("%Y-%m-%d");
 
       // Load CSV
       const data = (await d3.csv("GlobalTemperatures.csv", d => {
         return {
-          time: parseDate(d.dt),
+          time: d3.timeParse("%Y-%m-%d")(d.dt),
           LAT: +d.LandAverageTemperature,
           LATU: +d.LandAverageTemperatureUncertainty,
           LOAT: +d.LandAndOceanAverageTemperature,
@@ -40,15 +34,15 @@
       const height = 500 - margin.top - margin.bottom;
 
       const svg = d3.select("#scatterplot_1")
-  .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
 
       // X scale
-      const cxScale = d3.scaleTime()
+      const cxScale = d3.scaleLinear()
         .domain(d3.extent(data, d => d.time))
         .range([0, width]);
 
@@ -72,39 +66,31 @@
         .data(data)
         .enter()
         .append("circle")
-          .attr("cx", d => cxScale(d.time))
-          .attr("cy", d => cyScale(d.LAT))
           .attr("r", d => rScale(d.LOATU))
           .attr("fill", d => colorScale(d.LOAT))
-          .attr("opacity", 0.7);
+          .attr("opacity", 0.7)
+          .attr("stroke", "black")
+          .attr("stroke-width", 0.2);
+      //Update cx and cy
+      svg.selectAll("circle")
+      .attr("cx", function(d) { return cxScale(d.year); })
+      .attr("cy", function(d) { return cyScale(d.LAT); });
 
       // X Axis
-      const xAxis = d3.axisBottom(cxScale);
+      const xAxis = d3.axisBottom(cxScale)
+        .ticks(10)
+        .tickFormat(d3.format("d"));
+      
       svg.append("g")
         .attr("class", "x axis")
         .attr("transform", `translate(0,${height})`)
         .call(xAxis);
 
       // Y Axis
-      const yAxis = d3.axisLeft(cyScale);
+      const yAxis = d3.axisLeft(cyScale).ticks(8);
       svg.append("g")
         .attr("class", "y axis")
         .call(yAxis);
-
-      // Axis labels
-      svg.append("text")
-        .attr("x", width / 2)
-        .attr("y", height + margin.bottom - 10)
-        .attr("text-anchor", "middle")
-        .text("Date");
-
-      svg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", -margin.left + 15)
-        .attr("x", -height / 2)
-        .attr("text-anchor", "middle")
-        .text("Land Average Temperature (°C)");
-    }
 
     Scatter();
   </script>
