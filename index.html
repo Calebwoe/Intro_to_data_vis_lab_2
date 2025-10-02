@@ -76,13 +76,13 @@
           .attr("stroke-width", 0.2);
       //Update cx and cy
       svg.selectAll("circle")
-      .attr("cx", function(d) { return cxScale(d.year); })
+      .attr("cx", function(d) { return cxScale(d.time); })
       .attr("cy", function(d) { return cyScale(d.LAT); });
 
       // X Axis
       const xAxis = d3.axisBottom(cxScale)
         .ticks(10)
-        .tickFormat(d3.format("d"));
+        .tickFormat(d3.format("%Y"));
       
       svg.append("g")
         .attr("class", "x axis")
