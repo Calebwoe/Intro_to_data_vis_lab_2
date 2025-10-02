@@ -19,7 +19,7 @@
     async function Scatter() {
 
       // Load CSV
-      const data = (await d3.csv("GlobalTemperatures.csv", d => {
+      const data = await d3.csv("GlobalTemperatures.csv", d => {
         return {
           time: d3.timeParse("%Y-%m-%d")(d.dt),
           LAT: +d.LandAverageTemperature,
