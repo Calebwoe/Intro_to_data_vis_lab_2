@@ -80,20 +80,23 @@
       .attr("cy", function(d) { return cyScale(d.LAT); });
 
       // X Axis
-      const xAxis = d3.axisBottom(cxScale)
-        .ticks(10)
-        .tickFormat(d3.format("%Y"));
-      
-      svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", `translate(0,${height})`)
-        .call(xAxis);
+    const xAxis = d3.axisBottom(cxScale)
+      .ticks(10)
+    .tickFormat(d3.timeFormat("%Y"));
 
-      // Y Axis
-      const yAxis = d3.axisLeft(cyScale).ticks(8);
-      svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis);
+    svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", `translate(0, ${height})`)  // place at bottom
+    .call(xAxis);
+
+  // Y Axis
+  const yAxis = d3.axisLeft(cyScale)
+    .ticks(8);
+
+    svg.append("g")
+    .attr("class", "y axis")
+    .call(yAxis);
+
     }
     Scatter();
   </script>
